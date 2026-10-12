@@ -10,6 +10,35 @@
 #include "utils.h"
 #include "synth.h"
 
+
+
+enum Direction
+{
+	UP,
+	DOWN,
+	LEFT,
+	RIGHT
+};
+
+
+
+struct Enemy {
+	float x;
+	float y;
+	float dirX;
+	float dirY;
+	bool dead;
+	float directionTimer;
+};
+
+struct Bullet
+{
+	float x;
+	float y;
+	float dirX;
+	float dirY;
+	Direction bulletDir;
+};
 class Game
 {
 public:
@@ -20,6 +49,14 @@ public:
 	SDL_Renderer* renderer;
 	int window_width;
 	int window_height;
+	vec2 CameraPos;
+	vec2 CharacterPos;
+	bool keyHas;
+	bool doorOpen;
+	Enemy enemy;
+	Direction characterDirection;
+
+	std::vector<Bullet> bullets;
 
 	//some globals
 	long frame;
@@ -27,6 +64,8 @@ public:
 	float elapsed_time;
 	int fps;
 	bool must_exit;
+	bool gameOver;
+
 
 	//audio
 	Synth synth;
@@ -39,6 +78,29 @@ public:
 	void update( double dt );
 
 	void showFramebuffer(Image* img);
+
+	//drawMap function
+
+	void drawMap(Image& framebuffer);
+
+
+	//collision function
+	
+	bool isCollision(float x, float y);
+
+	bool isCollisionDoor(float x, float y);
+
+	bool isCharacterCollision(float x, float y);
+
+	bool characterEnemyCollision(vec2 CharacterPos, Enemy enemy);
+
+	bool hasKey(float x, float y);
+
+	void openDoor();
+
+	//Collision bullet enemy
+
+	bool CollisionBulletEnemy(Bullet bullet);
 
 	//events
 	void onKeyDown( SDL_KeyboardEvent event );
