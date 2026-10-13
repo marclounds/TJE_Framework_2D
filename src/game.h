@@ -9,61 +9,37 @@
 #include "image.h"
 #include "utils.h"
 #include "synth.h"
+#include "stage.h"
+#include "intro_stage.h"
+#include "play_stage.h"
 
 
 
-enum Direction
-{
-	UP,
-	DOWN,
-	LEFT,
-	RIGHT
-};
 
-
-
-struct Enemy {
-	float x;
-	float y;
-	float dirX;
-	float dirY;
-	bool dead;
-	float directionTimer;
-};
-
-struct Bullet
-{
-	float x;
-	float y;
-	float dirX;
-	float dirY;
-	Direction bulletDir;
-};
 class Game
 {
 public:
 	static Game* instance;
-
+	
 	//window
 	SDL_Window* window;
 	SDL_Renderer* renderer;
 	int window_width;
 	int window_height;
-	vec2 CameraPos;
-	vec2 CharacterPos;
-	bool keyHas;
-	bool doorOpen;
-	Enemy enemy;
-	Direction characterDirection;
+	bool must_exit;
 
-	std::vector<Bullet> bullets;
+	IntroStage* intro_stage;
+	PlayStage* play_stage;
+
+	Stage* current_stage;
+
 
 	//some globals
+	//some globals
 	long frame;
-    float time;
+	float time;
 	float elapsed_time;
 	int fps;
-	bool must_exit;
 	bool gameOver;
 
 
@@ -86,21 +62,10 @@ public:
 
 	//collision function
 	
-	bool isCollision(float x, float y);
-
-	bool isCollisionDoor(float x, float y);
-
-	bool isCharacterCollision(float x, float y);
-
-	bool characterEnemyCollision(vec2 CharacterPos, Enemy enemy);
-
-	bool hasKey(float x, float y);
-
-	void openDoor();
+	
 
 	//Collision bullet enemy
 
-	bool CollisionBulletEnemy(Bullet bullet);
 
 	//events
 	void onKeyDown( SDL_KeyboardEvent event );

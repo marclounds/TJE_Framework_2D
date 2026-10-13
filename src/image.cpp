@@ -40,15 +40,16 @@ Image::Image(const Image& c) {
 //assign operator
 Image& Image::operator = (const Image& c)
 {
-	if(pixels) delete pixels;
+    if (this == &c) return *this;
+	if (pixels) delete[] pixels;
 	pixels = NULL;
 
 	width = c.width;
 	height = c.height;
-	if(c.pixels)
+	if (c.pixels)
 	{
-		pixels = new Color[width*height*sizeof(Color)];
-		memcpy(pixels, c.pixels, width*height*sizeof(Color));
+		pixels = new Color[width * height];
+		memcpy(pixels, c.pixels, width * height * sizeof(Color));
 	}
 	return *this;
 }
@@ -65,6 +66,8 @@ Image::~Image()
 
 void Image::drawImage(const Image& img, int x, int y)
 {
+    if (!img.pixels)
+		return;
 	if (x > (int)width || y > (int)height || (x + (int)img.width) < 0 || (y + (int)img.height) < 0)
 		return; //outside
 
@@ -90,6 +93,8 @@ void Image::drawImage(const Image& img, int x, int y)
 
 void Image::drawImage(const Image& img, int x, int y, int w, int h)
 {
+    if (!img.pixels)
+		return;
 	if (x > (int)width || y > (int)height || (x + (int)w) < 0 || (y + (int)h) < 0)
 		return; //outside
 
@@ -120,6 +125,8 @@ void Image::drawImage(const Image& img, int x, int y, int w, int h)
 
 void Image::drawImage(const Image& img, int x, int y, int imgx, int imgy, int imgw, int imgh)
 {
+    if (!img.pixels)
+		return;
 	if (x > (int)width || y > (int)height || (x + (int)imgw) < 0 || (y + (int)imgh) < 0)
 		return; //outside
 
@@ -149,6 +156,8 @@ void Image::drawImage(const Image& img, int x, int y, int imgx, int imgy, int im
 
 void Image::drawImage(const Image& img, int sx, int sy, int sw, int sh, int dx, int dy, int dw, int dh) //draws only a part of the image
 {
+    if (!img.pixels)
+		return;
 	if (dx > (int)width || dy > (int)height || (dx + (int)dw) < 0 || (dy + (int)dh) < 0)
 		return; //outside
 
@@ -433,11 +442,14 @@ bool Image::load(const char* filename) {
 		return false;
 	}
 
-	width = w;
+    width = w;
 	height = h;
+	if (pixels)
+		delete[] pixels;
 	pixels = new Color[width * height];
 
-	memcpy(pixels, raw_data, sizeof(unsigned char) * w * h * c);
+	// stbi_load was requested to provide 4 components per pixel
+	memcpy(pixels, raw_data, sizeof(unsigned char) * w * h * 4);
 
 	stbi_image_free(raw_data);
 

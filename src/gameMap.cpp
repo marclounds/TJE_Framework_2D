@@ -2,6 +2,7 @@
 #include "json.hpp"
 #include <fstream>
 #include <iostream>
+
 GameMap::GameMap(int w, int h)
 {
     width = w;
