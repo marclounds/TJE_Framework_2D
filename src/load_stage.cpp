@@ -16,6 +16,12 @@ LoadStage::LoadStage(GameState& state)
     : gamestate(state)
 {
  //We must load all the saves in a vector of Game States
+    getSavedGames();
+
+}
+
+
+void LoadStage::getSavedGames() {
     savedGames.clear();
 
     // Check if the saves directory exists
@@ -36,7 +42,6 @@ LoadStage::LoadStage(GameState& state)
     std::sort(savedGames.begin(), savedGames.end());
 
     selectedSave = 0;
-
 }
 
 void LoadStage::update(double dt)
@@ -104,15 +109,37 @@ void LoadStage::loadGame(GameState& gamestate, int saveNumber)
         float x, y;
         int loadedScore;
         bool loadedKey, loadedDoor;
+        int NumEnemies;
 
-        if (file >> x >> y >> loadedScore >> loadedKey >> loadedDoor)
+        if (file >> x >> y >> loadedScore >> loadedKey >> loadedDoor >> NumEnemies)
         {
             gamestate.CharacterPos.x = x;
             gamestate.CharacterPos.y = y;
             gamestate.score = loadedScore;
             gamestate.keyHas = loadedKey;
             gamestate.doorOpen = loadedDoor;
+           
 
+            //We must erase enemy vector memory to then reload it
+            gamestate.enemies.clear();
+
+            for (int i = 0; i < NumEnemies; i++) {
+                Enemy enemy;
+                file >> enemy.x;
+                file >> enemy.y;
+                file >> enemy.dirX;
+                file >> enemy.dirY;
+                file >> enemy.dead;
+                file >> enemy.directionTimer;
+                file >> enemy.initialPosX;
+                file >> enemy.initialPosY;
+
+                gamestate.enemies.push_back(enemy);
+
+            }
+
+            
+            
             std::cout << "Game loaded from " << filename << std::endl;
         }
         else

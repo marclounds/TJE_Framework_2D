@@ -20,6 +20,7 @@ public:
     int selectedSave;
     bool finished = false;
     void loadGame(GameState& gamestate, int saveNumber);
+    void getSavedGames();
 
     std::vector<std::string> savedGames;
 

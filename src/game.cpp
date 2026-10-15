@@ -77,7 +77,6 @@ void Game::update(double dt)
 		current_stage = play_stage;
 		gamestate.CharacterPos.x = 300;
 		gamestate.CharacterPos.y = 200;
-
 		play_stage->generationEnemies();
 		intro_stage->finished = false;
 	}
@@ -89,11 +88,13 @@ void Game::update(double dt)
 	}
 	if (current_stage == pause_stage && pause_stage->load == true) {
 		current_stage = load_stage;
+		load_stage->getSavedGames();
 		pause_stage->load =false;
 
 	}
 	if (current_stage == pause_stage && pause_stage->finished == true) {
 		current_stage = play_stage;
+
 		pause_stage->finished = false;
 
 	}

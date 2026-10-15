@@ -65,7 +65,7 @@ enemySprite.load("data/32x32/t0430_market_a_clerk_robot_a.png");
 
 
 void PlayStage::generationEnemies() {
-	
+    //gamestate.numEnemies = 0;
 	gamestate.enemy.x = 340;
 	gamestate.enemy.y = 240;
 	gamestate.enemy.initialPosX = 340;
@@ -87,7 +87,10 @@ void PlayStage::generationEnemies() {
 
 	gamestate.enemies.push_back(gamestate.enemy);
 	gamestate.enemies.push_back(gamestate.enemy2);
+
+
 }
+
 
 //Draw game map function
 void PlayStage::drawMap(Image& framebuffer)

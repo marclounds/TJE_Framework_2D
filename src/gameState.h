@@ -41,6 +41,7 @@ struct GameState {
 	Enemy enemy;
 	Enemy enemy2;
 	Direction characterDirection;
+	//int numEnemies;
 
 	std::vector<Bullet> bullets;
 	std::vector<Enemy> enemies;

@@ -67,6 +67,8 @@ void PauseStage::saveGame(GameState& gamestate)
     } while (true);
 
     std::ofstream file(filename);
+    //Before saving we determine how many enemies we currently have so that when we load we allocate right amount of enemy storage
+    
 
     if (file.is_open())
     {
@@ -75,6 +77,21 @@ void PauseStage::saveGame(GameState& gamestate)
         file << gamestate.score << "\n";
         file << gamestate.keyHas << "\n";
         file << gamestate.doorOpen << "\n";
+        file << gamestate.enemies.size() << "\n";
+
+
+        //For enemies in the state
+        for (Enemy& enemy : gamestate.enemies) {
+            file << enemy.x << "\n";
+            file << enemy.y << "\n";
+            file << enemy.dirX << "\n";
+            file << enemy.dirY << "\n";
+            file << enemy.dead << "\n";
+            file << enemy.directionTimer << "\n";
+            file << enemy.initialPosX << "\n";
+            file << enemy.initialPosY << "\n";
+
+        }
 
         std::cout << "Game saved as " << filename << std::endl;
 
