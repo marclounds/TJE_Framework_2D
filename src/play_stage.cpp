@@ -64,29 +64,69 @@ enemySprite.load("data/32x32/t0430_market_a_clerk_robot_a.png");
 }
 
 
-void PlayStage::generationEnemies() {
+void PlayStage::generationEnemies(int numberOfEnemies) {
+    
+    int mapWidth = map->width * map->tile_width;
+    int mapHeight = map->height * map->tile_height;
+
+    for (int i = 0; i < numberOfEnemies; i++)
+    {
+        Enemy enemy{};
+
+        bool validPosition = false;
+
+        int attempts = 0;
+
+        while (!validPosition && attempts < 1000)
+        {
+            attempts++;
+
+            enemy.x = rand() % (mapWidth - 32 + 1);
+            enemy.y = rand() % (mapHeight - 32 + 1);
+
+            // Check collision with walls and doors
+            if (!isCharacterCollision(enemy.x, enemy.y) &&
+                !isCollisionDoor(enemy.x, enemy.y))
+            {
+                validPosition = true;
+            }
+        }
+
+        if (validPosition)
+        {
+            enemy.initialPosX = enemy.x;
+            enemy.initialPosY = enemy.y;
+
+            enemy.dead = false;
+            enemy.directionTimer = 0;
+            enemy.dirX = 0;
+            enemy.dirY = 0;
+
+            gamestate.enemies.push_back(enemy);
+        }
+    }
     //gamestate.numEnemies = 0;
-	gamestate.enemy.x = 340;
-	gamestate.enemy.y = 240;
-	gamestate.enemy.initialPosX = 340;
-	gamestate.enemy.initialPosY = 240;
+	//gamestate.enemy.x = 340;
+	//gamestate.enemy.y = 240;
+	//gamestate.enemy.initialPosX = 340;
+	//gamestate.enemy.initialPosY = 240;
 
-	gamestate.enemy.dead = false;
-	gamestate.enemy.directionTimer = 0;
-	gamestate.enemy.dirX = 0;
-	gamestate.enemy.dirY = 0;
+	//gamestate.enemy.dead = false;
+	//gamestate.enemy.directionTimer = 0;
+	//gamestate.enemy.dirX = 0;
+	//gamestate.enemy.dirY = 0;
 
-	gamestate.enemy2.x = 360;
-	gamestate.enemy2.y = 270;
-	gamestate.enemy2.initialPosX = 310;
-	gamestate.enemy2.initialPosY = 210;
-	gamestate.enemy2.dead = false;
-	gamestate.enemy2.directionTimer = 0;
-	gamestate.enemy2.dirX = 0;
-	gamestate.enemy2.dirY = 0;
+	//gamestate.enemy2.x = 360;
+	//gamestate.enemy2.y = 270;
+	//gamestate.enemy2.initialPosX = 310;
+	//gamestate.enemy2.initialPosY = 210;
+	//gamestate.enemy2.dead = false;
+	//gamestate.enemy2.directionTimer = 0;
+	//gamestate.enemy2.dirX = 0;
+	//gamestate.enemy2.dirY = 0;
 
-	gamestate.enemies.push_back(gamestate.enemy);
-	gamestate.enemies.push_back(gamestate.enemy2);
+	//gamestate.enemies.push_back(gamestate.enemy);
+	//gamestate.enemies.push_back(gamestate.enemy2);
 
 
 }
@@ -170,6 +210,22 @@ bool PlayStage::CollisionBulletEnemy(Bullet bullet, Enemy enemy) {
 	}
 
 
+
+}
+
+
+bool PlayStage::goalReached(float x, float y) {
+    int collision_layer = 4;
+    int tile_x = (int)(x / map->tile_width);
+    int tile_y = (int)(y / map->tile_height);
+    if (!map)
+        return false;
+
+    if (tile_x < 0 || tile_x >= map->width || tile_y < 0 || tile_y >= map->height)
+        return false;
+
+    sCell& cell = map->getCell(tile_x, tile_y, collision_layer);
+    return cell.type >= 0;
 
 }
 
@@ -581,6 +637,11 @@ void PlayStage::update(double dt)
 
     {
         pause = true;
+    }
+
+    //If goal reached
+    if (goalReached(gamestate.CharacterPos.x, gamestate.CharacterPos.y)) {
+        goal = true;
     }
 }
 

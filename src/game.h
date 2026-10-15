@@ -16,6 +16,7 @@
 #include "pause_stage.h"
 #include "load_stage.h"
 #include "tutorial_stage.h"
+#include "goal_stage.h"
 #include "gameState.h"
 
 
@@ -43,6 +44,7 @@ public:
 	PauseStage* pause_stage;
 	LoadStage* load_stage;
 	TutorialStage* tutorial_stage;
+	GoalStage* goal_stage;
 
 
 	Stage* current_stage;

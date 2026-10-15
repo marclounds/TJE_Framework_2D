@@ -26,6 +26,7 @@ Game::Game(int window_width, int window_height, SDL_Window* window)
 	end_stage = new EndStage();
 	pause_stage = new PauseStage(gamestate);
 	load_stage = new LoadStage(gamestate);
+	goal_stage = new GoalStage();
 
 	fps = 0;
 	frame = 0;
@@ -77,8 +78,12 @@ void Game::update(double dt)
 		current_stage = play_stage;
 		gamestate.CharacterPos.x = 300;
 		gamestate.CharacterPos.y = 200;
-		play_stage->generationEnemies();
+		play_stage->generationEnemies(10);
 		intro_stage->finished = false;
+	}
+	if (current_stage == play_stage &&  play_stage->goal == true) {
+		current_stage = goal_stage;
+
 	}
 	if (play_stage->pause == true && current_stage == play_stage) {
 		current_stage = pause_stage;
@@ -112,6 +117,11 @@ void Game::update(double dt)
 		current_stage = intro_stage;
 		end_stage->finished = false;
 	
+	}
+	if (current_stage == goal_stage && goal_stage->finished == true) {
+		current_stage = intro_stage;
+		goal_stage->finished = false;
+		play_stage->goal = false;
 	}
 	
 

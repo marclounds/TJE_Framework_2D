@@ -31,7 +31,7 @@ public:
 	int fps;
 	bool must_exit;
 	bool gameOver;
-
+	bool goal = false;
 
 
 	//Constructor 
@@ -44,9 +44,11 @@ public:
 	bool isCollisionDoor(float x, float y);
 	bool isCollision(float x, float y);
 	bool hasKey(float x, float y);
+	bool goalReached(float x, float y);
 	bool isCharacterCollision(float x, float y);
 	bool characterEnemyCollision(vec2 CharacterPos, Enemy enemy);
-	void generationEnemies();
+	//void generationEnemies();
+	void generationEnemies(int numberOfEnemies);
 
 	//events
 	void onKeyDown(SDL_KeyboardEvent event);
