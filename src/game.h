@@ -12,6 +12,12 @@
 #include "stage.h"
 #include "intro_stage.h"
 #include "play_stage.h"
+#include "end_stage.h"
+#include "pause_stage.h"
+#include "load_stage.h"
+#include "tutorial_stage.h"
+#include "gameState.h"
+
 
 
 
@@ -28,8 +34,16 @@ public:
 	int window_height;
 	bool must_exit;
 
+	GameState gamestate;
+
+
 	IntroStage* intro_stage;
 	PlayStage* play_stage;
+	EndStage* end_stage;
+	PauseStage* pause_stage;
+	LoadStage* load_stage;
+	TutorialStage* tutorial_stage;
+
 
 	Stage* current_stage;
 

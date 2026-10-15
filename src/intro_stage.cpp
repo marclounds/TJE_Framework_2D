@@ -17,6 +17,7 @@ IntroStage::IntroStage()
 void IntroStage::update(double dt)
 {
     // Intro screen logic
+    
     if (Input::wasKeyPressed(SDL_SCANCODE_A))
     {
         finished = true;

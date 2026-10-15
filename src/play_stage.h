@@ -5,37 +5,11 @@
 #include "utils.h"
 #include "synth.h"
 #include "input.h"
+#include "gameState.h"
 
 
 
 
-enum Direction
-{
-	UP,
-	DOWN,
-	LEFT,
-	RIGHT
-};
-
-
-
-struct Enemy {
-	float x;
-	float y;
-	float dirX;
-	float dirY;
-	bool dead;
-	float directionTimer;
-};
-
-struct Bullet
-{
-	float x;
-	float y;
-	float dirX;
-	float dirY;
-	Direction bulletDir;
-};
 
 class PlayStage : public Stage
 {
@@ -48,14 +22,8 @@ public:
 	int window_width;
 	int window_height;
 	vec2 CameraPos;
-	vec2 CharacterPos;
-	bool keyHas;
-	bool doorOpen;
-	Enemy enemy;
-	Direction characterDirection;
 
-	std::vector<Bullet> bullets;
-
+	bool pause = false;
 	//some globals
 	long frame;
 	float time;
@@ -67,17 +35,18 @@ public:
 
 
 	//Constructor 
-	PlayStage();
+	PlayStage(GameState& gamestate);
 
     void update(double dt) override;
     void render(Image& framebuffer) override;
     void drawMap(Image& framebuffer);
-    bool CollisionBulletEnemy(Bullet bullet);
+    bool CollisionBulletEnemy(Bullet bullet, Enemy enemy);
 	bool isCollisionDoor(float x, float y);
 	bool isCollision(float x, float y);
 	bool hasKey(float x, float y);
 	bool isCharacterCollision(float x, float y);
 	bool characterEnemyCollision(vec2 CharacterPos, Enemy enemy);
+	void generationEnemies();
 
 	//events
 	void onKeyDown(SDL_KeyboardEvent event);
@@ -94,5 +63,11 @@ public:
 
 	//audio stuff
 	void enableAudio(); //opens audio channel to play sound
+
+
 	void onAudio(float* buffer, unsigned int len, double time, SDL_AudioSpec& audio_spec); //called constantly to fill the audio buffer
+
+private:
+	GameState& gamestate;
+
 };

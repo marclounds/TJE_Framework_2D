@@ -109,3 +109,7 @@ inline Image operator * (const Image& a, const Image& b) {
 }
 
 #endif
+
+// Global fonts defined in play_stage.cpp
+extern Image font;
+extern Image minifont;

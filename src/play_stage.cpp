@@ -4,7 +4,7 @@
 #include "gameMap.h"
 #include <vector>
 #include <cmath>
-
+#include <algorithm>
 
 
 Image font;
@@ -20,7 +20,8 @@ Image bulletSpriteDown;
 Image enemySprite;
 //Constructor
 
-PlayStage::PlayStage()
+PlayStage::PlayStage(GameState& state )
+	: gamestate(state)
 {
 this->window_width = window_width;
 this->window_height = window_height;
@@ -33,20 +34,16 @@ fps = 0;
 frame = 0;
 time = 0.0f;
 elapsed_time = 0.0f;
-CharacterPos.x = 300;
-CharacterPos.y = 200;
-CameraPos.x = CharacterPos.x / 2;
-CameraPos.y = CharacterPos.y / 2;
-keyHas = false;
-doorOpen = false;
-gameOver = false;
-enemy.x = 310;
-enemy.y = 210;
-enemy.dead = false;
-enemy.directionTimer = 0;
-enemy.dirX = 0;
-enemy.dirY = 0;
-characterDirection = RIGHT;
+gamestate.CharacterPos.x = 300;
+gamestate.CharacterPos.y = 200;
+CameraPos.x = gamestate.CharacterPos.x / 2;
+CameraPos.y = gamestate.CharacterPos.y / 2;
+gamestate.keyHas = false;
+gamestate.doorOpen = false;
+gamestate.characterDirection = RIGHT;
+gamestate.score = 0;
+
+
 
 
 
@@ -62,8 +59,35 @@ bulletSpriteUp.load("data/32x32/bulllet_up.png");
 bulletSpriteDown.load("data/32x32/bullet_down.png");
 enemySprite.load("data/32x32/t0430_market_a_clerk_robot_a.png");
 
+
+
 }
 
+
+void PlayStage::generationEnemies() {
+	
+	gamestate.enemy.x = 340;
+	gamestate.enemy.y = 240;
+	gamestate.enemy.initialPosX = 340;
+	gamestate.enemy.initialPosY = 240;
+
+	gamestate.enemy.dead = false;
+	gamestate.enemy.directionTimer = 0;
+	gamestate.enemy.dirX = 0;
+	gamestate.enemy.dirY = 0;
+
+	gamestate.enemy2.x = 360;
+	gamestate.enemy2.y = 270;
+	gamestate.enemy2.initialPosX = 310;
+	gamestate.enemy2.initialPosY = 210;
+	gamestate.enemy2.dead = false;
+	gamestate.enemy2.directionTimer = 0;
+	gamestate.enemy2.dirX = 0;
+	gamestate.enemy2.dirY = 0;
+
+	gamestate.enemies.push_back(gamestate.enemy);
+	gamestate.enemies.push_back(gamestate.enemy2);
+}
 
 //Draw game map function
 void PlayStage::drawMap(Image& framebuffer)
@@ -123,7 +147,7 @@ void PlayStage::drawMap(Image& framebuffer)
 	}
 }
 
-bool PlayStage::CollisionBulletEnemy(Bullet bullet) {
+bool PlayStage::CollisionBulletEnemy(Bullet bullet, Enemy enemy) {
 	//We calculate tile of enemy
 	float enemyLeft = enemy.x;
 	float enemyRight = enemy.x + 24;
@@ -231,14 +255,14 @@ bool PlayStage::isCharacterCollision(float x, float y)
 bool PlayStage::characterEnemyCollision(vec2 CharacterPos, Enemy enemy) {
 
 	int LeftCharacter = CharacterPos.x;
-	int RightCharacter = CharacterPos.x + 32;
+	int RightCharacter = CharacterPos.x + 20;
 	int TopCharacter = CharacterPos.y;
-	int LowCharacter = CharacterPos.y + 32;
+	int LowCharacter = CharacterPos.y + 20;
 
 	int LeftEnemy = enemy.x;
-	int RightEnemy = enemy.y + 32;
+	int RightEnemy = enemy.x + 20;
 	int TopEnemy = enemy.y;
-	int LowEnemy = enemy.y + 32;
+	int LowEnemy = enemy.y + 20;
 
 
 	if (LeftCharacter <= RightEnemy && RightCharacter >= LeftEnemy && TopCharacter <= LowEnemy && LowCharacter >= TopEnemy) {
@@ -251,241 +275,310 @@ bool PlayStage::characterEnemyCollision(vec2 CharacterPos, Enemy enemy) {
 }
 
 
+
 void PlayStage::update(double dt)
 {
-    // Character movement
-    // Enemy movement
-    // Bullets
-    // Collision
-    // etc.
+    float speed = 100.0f;
 
-		float speed = 100.0f;
-
-		float new_x = CharacterPos.x;
-		float new_y = CharacterPos.y;
+    float new_x = gamestate.CharacterPos.x;
+    float new_y = gamestate.CharacterPos.y;
 
 
+    // ENEMY MOVEMENT
 
-		//Movement of enemy should be mnore or less random and has to take collision into account
-		if (!enemy.dead) {
-			float enemySpeed = 40.0f;
+    for (Enemy& enemy : gamestate.enemies)
+    {
+        if (!enemy.dead)
+        {
+            float enemySpeed = 40.0f;
 
-			enemy.directionTimer -= dt;
+            enemy.directionTimer -= dt;
 
-			if (enemy.directionTimer <= 0) {
-				int direction = rand() % 4;
+            if (enemy.directionTimer <= 0)
+            {
+                int direction = rand() % 4;
 
+                if (direction == 0) // UP
+                {
+                    enemy.dirX = 0;
+                    enemy.dirY = -1;
+                }
+                else if (direction == 1) // DOWN
+                {
+                    enemy.dirX = 0;
+                    enemy.dirY = 1;
+                }
+                else if (direction == 2) // LEFT
+                {
+                    enemy.dirX = -1;
+                    enemy.dirY = 0;
+                }
+                else // RIGHT
+                {
+                    enemy.dirX = 1;
+                    enemy.dirY = 0;
+                }
 
-				if (direction == 0) // UP
-				{
-					enemy.dirX = 0;
-					enemy.dirY = -1;
-				}
-				else if (direction == 1) // DOWN
-				{
-					enemy.dirX = 0;
-					enemy.dirY = 1;
-				}
-				else if (direction == 2) // LEFT
-				{
-					enemy.dirX = -1;
-					enemy.dirY = 0;
-				}
-				else // RIGHT
-				{
-					enemy.dirX = 1;
-					enemy.dirY = 0;
-				}
+                enemy.directionTimer = 1.0f + (rand() % 3);
+            }
 
-				// Keep this direction for 1–3 seconds
-				enemy.directionTimer = 1.0f + (rand() % 3);
-			}
-			float newEnemyX, newEnemyY;
-			newEnemyX = enemy.x + enemy.dirX * enemySpeed * dt;
-			newEnemyY = enemy.y + enemy.dirY * enemySpeed * dt;
+            float newEnemyX = enemy.x + enemy.dirX * enemySpeed * dt;
+            float newEnemyY = enemy.y + enemy.dirY * enemySpeed * dt;
 
-			//Have to take collisions into account then we reverse the direction of movement of the enemy
+            // X collision
+            if (!isCharacterCollision(newEnemyX, enemy.y))
+            {
+                enemy.x = newEnemyX;
+            }
+            else
+            {
+                enemy.dirX *= -1;
+            }
 
-			if (!isCharacterCollision(newEnemyX, enemy.y)) {
-				enemy.x = newEnemyX;
-			}
-
-			if (!isCharacterCollision(enemy.x, newEnemyY)) {
-				enemy.y = newEnemyY;
-			}
-
-			if (isCharacterCollision(newEnemyX, enemy.y)) {
-				enemy.dirX *= -1;
-			}
-			if (isCharacterCollision(enemy.x, newEnemyY)) {
-				enemy.dirY *= -1;
-			}
-
-		}
-
-		// Desired movement
-		if (Input::isKeyPressed(SDL_SCANCODE_RIGHT)) {
-			sprite.load("data/32x32/t0099_player_flamethrower_east_a.png");
-			new_x += speed * dt;
-			characterDirection = RIGHT;
-		}
-
-		if (Input::isKeyPressed(SDL_SCANCODE_LEFT)) {
-			new_x -= speed * dt;
-			sprite.load("data/32x32/t0215_player_flamethrower_west_a.png");
-			characterDirection = LEFT;
-		}
-		if (Input::isKeyPressed(SDL_SCANCODE_UP)) {
-			new_y -= speed * dt;
-			sprite.load("data/32x32/t0231_player_flamethrower_north_a.png");
-			characterDirection = UP;
-		}
-		if (Input::isKeyPressed(SDL_SCANCODE_DOWN)) {
-			new_y += speed * dt;
-			sprite.load("data/32x32/t0199_player_flamethrower_south_a.png");
-			characterDirection = DOWN;
-		}
+            // Y collision
+            if (!isCharacterCollision(enemy.x, newEnemyY))
+            {
+                enemy.y = newEnemyY;
+            }
+            else
+            {
+                enemy.dirY *= -1;
+            }
+        }
+    }
 
 
-		if (Input::wasKeyPressed(SDL_SCANCODE_A))
-		{
-			Bullet bullet;
+    // CHARACTER MOVEMENT
 
-			bullet.x = CharacterPos.x;
-			bullet.y = CharacterPos.y;
+    if (Input::isKeyPressed(SDL_SCANCODE_RIGHT))
+    {
+        sprite.load("data/32x32/t0099_player_flamethrower_east_a.png");
+        new_x += speed * dt;
+        gamestate.characterDirection = RIGHT;
+    }
 
-			// For now, bullet travels right
-			if (characterDirection == UP) {
-				bullet.dirX = 0.0f;
-				bullet.dirY = -1.0f;
-				bullet.bulletDir = UP;
-			}
-			if (characterDirection == DOWN) {
-				bullet.dirX = 0.0f;
-				bullet.dirY = 1.0f;
-				bullet.bulletDir = DOWN;
-			}
-			if (characterDirection == LEFT) {
-				bullet.dirX = -1.0f;
-				bullet.dirY = 0.0f;
-				bullet.bulletDir = LEFT;
-			}
-			if (characterDirection == RIGHT) {
-				bullet.dirX = 1.0f;
-				bullet.dirY = 0.0f;
-				bullet.bulletDir = RIGHT;
+    if (Input::isKeyPressed(SDL_SCANCODE_LEFT))
+    {
+        new_x -= speed * dt;
+        sprite.load("data/32x32/t0215_player_flamethrower_west_a.png");
+        gamestate.characterDirection = LEFT;
+    }
 
-			}
+    if (Input::isKeyPressed(SDL_SCANCODE_UP))
+    {
+        new_y -= speed * dt;
+        sprite.load("data/32x32/t0231_player_flamethrower_north_a.png");
+        gamestate.characterDirection = UP;
+    }
 
-
-			//Adds bullet object to the list 
-			bullets.push_back(bullet);
-		}
+    if (Input::isKeyPressed(SDL_SCANCODE_DOWN))
+    {
+        new_y += speed * dt;
+        sprite.load("data/32x32/t0199_player_flamethrower_south_a.png");
+        gamestate.characterDirection = DOWN;
+    }
 
 
-		// Pick up key
-		if (hasKey(new_x, CharacterPos.y) ||
-			hasKey(CharacterPos.x, new_y))
-		{
-			std::cout << "has  key" << std::endl;
-			keyHas = true;
-		}
+    // SHOOTING
+
+    if (Input::wasKeyPressed(SDL_SCANCODE_A))
+    {
+        Bullet bullet{};
+
+        bullet.x = gamestate.CharacterPos.x;
+        bullet.y = gamestate.CharacterPos.y;
+
+        if (gamestate.characterDirection == UP)
+        {
+            bullet.dirX = 0.0f;
+            bullet.dirY = -1.0f;
+            bullet.bulletDir = UP;
+        }
+
+        if (gamestate.characterDirection == DOWN)
+        {
+            bullet.dirX = 0.0f;
+            bullet.dirY = 1.0f;
+            bullet.bulletDir = DOWN;
+        }
+
+        if (gamestate.characterDirection == LEFT)
+        {
+            bullet.dirX = -1.0f;
+            bullet.dirY = 0.0f;
+            bullet.bulletDir = LEFT;
+        }
+
+        if (gamestate.characterDirection == RIGHT)
+        {
+            bullet.dirX = 1.0f;
+            bullet.dirY = 0.0f;
+            bullet.bulletDir = RIGHT;
+        }
+
+        gamestate.bullets.push_back(bullet);
+    }
 
 
-		// X movement
-		bool doorCollisionX =
-			isCollisionDoor(new_x, CharacterPos.y);
-		//if (doorCollisionX) {
-		//	std::cout << "door openedD" << std::endl;
-		//}
-		//
-		if (isCharacterCollision(new_x, CharacterPos.y)) {
-			std::cout << "Character collision not door" << std::endl;
-		}
+    // PICK UP KEY
 
-		if (!isCharacterCollision(new_x, CharacterPos.y))
-		{
-
-			if (!doorCollisionX || keyHas == true)
-			{
-				CharacterPos.x = new_x;
-				//std::cout << "door collision: " << doorCollisionX << std::endl;
-
-				if (doorCollisionX && keyHas == true) {
-					std::cout << "door opened" << std::endl;
-					doorOpen = true;
-					int doorX = (int)(new_x / map->tile_width);
-					int doorY = (int)(CharacterPos.y / map->tile_height);
-
-					map->getCell(doorX, doorY, 3).type = -1;
-					map->getCell(doorX, doorY, 2).type = 143;
-				}
-			}
-		}
+    if (hasKey(new_x, gamestate.CharacterPos.y) ||
+        hasKey(gamestate.CharacterPos.x, new_y))
+    {
+        std::cout << "has key" << std::endl;
+        gamestate.keyHas = true;
+    }
 
 
-		// Y movement
-		bool doorCollisionY =
-			isCollisionDoor(CharacterPos.x, new_y);
-		//if (doorCollisionY) {
-		//	std::cout << "door openedD" << std::endl;
-		//}
+    // X MOVEMENT AND DOOR COLLISION
+
+    bool doorCollisionX =
+        isCollisionDoor(new_x, gamestate.CharacterPos.y);
+
+    if (isCharacterCollision(new_x, gamestate.CharacterPos.y))
+    {
+        std::cout << "Character collision not door" << std::endl;
+    }
+
+    if (!isCharacterCollision(new_x, gamestate.CharacterPos.y))
+    {
+        if (!doorCollisionX || gamestate.keyHas == true)
+        {
+            gamestate.CharacterPos.x = new_x;
+
+            if (doorCollisionX && gamestate.keyHas == true)
+            {
+                std::cout << "door opened" << std::endl;
+
+                gamestate.doorOpen = true;
+
+                // Open all door tiles
+                for (int i = 0; i < map->width; i++)
+                {
+                    for (int j = 0; j < map->height; j++)
+                    {
+                        if (map->getCell(i, j, 3).type != -1)
+                        {
+                            map->getCell(i, j, 3).type = -1;
+                            map->getCell(i, j, 2).type = 143;
+                        }
+                    }
+                }
+            }
+        }
+    }
 
 
-		if (isCharacterCollision(CharacterPos.x, new_y)) {
-			std::cout << "Character collision not door" << std::endl;
-		}
+    // Y MOVEMENT AND DOOR COLLISION
 
-		if (!isCharacterCollision(CharacterPos.x, new_y))
-		{
-			if (!doorCollisionY || keyHas == true)
-			{
-				//std::cout << "key: " << keyHas << std::endl;
-				CharacterPos.y = new_y;
+    bool doorCollisionY =
+        isCollisionDoor(gamestate.CharacterPos.x, new_y);
 
-				//std::cout << "door collision: " << doorCollisionY << std::endl;
+    if (isCharacterCollision(gamestate.CharacterPos.x, new_y))
+    {
+        std::cout << "Character collision not door" << std::endl;
+    }
 
-				if (doorCollisionY && keyHas == true) {
-					doorOpen = true;
+    if (!isCharacterCollision(gamestate.CharacterPos.x, new_y))
+    {
+        if (!doorCollisionY || gamestate.keyHas == true)
+        {
+            gamestate.CharacterPos.y = new_y;
 
-					std::cout << "door opened" << std::endl;
+            if (doorCollisionY && gamestate.keyHas == true)
+            {
+                gamestate.doorOpen = true;
 
-					int doorX = (int)(CharacterPos.x / map->tile_width);
-					int doorY = (int)(new_y / map->tile_height);
-					map->getCell(doorX, doorY, 3).type = -1;
-					map->getCell(doorX, doorY, 2).type = 143;
-				}
-			}
-		}
+                std::cout << "door opened" << std::endl;
 
-
-		// Camera follows character
-		CameraPos.x = CharacterPos.x - 80;
-		CameraPos.y = CharacterPos.y - 60;
-
-		float bulletSpeed = 200.0f;
-
-		for (Bullet& bullet : bullets)
-		{
-			bullet.x += bullet.dirX * bulletSpeed * dt;
-			bullet.y += bullet.dirY * bulletSpeed * dt;
-			if (CollisionBulletEnemy(bullet)) {
-				enemy.dead = true;
-				std::cout << "enemy dead" << std::endl;
-
-			}
-		}
-
-		if (characterEnemyCollision(CharacterPos, enemy)) {
-			gameOver = true;
-			std::cout << "game over" << std::endl;
-		}
+                // Open all door tiles
+                for (int i = 0; i < map->width; i++)
+                {
+                    for (int j = 0; j < map->height; j++)
+                    {
+                        if (map->getCell(i, j, 3).type != -1)
+                        {
+                            map->getCell(i, j, 3).type = -1;
+                            map->getCell(i, j, 2).type = 143;
+                        }
+                    }
+                }
+            }
+        }
+    }
 
 
+    // CAMERA FOLLOWS CHARACTER
+
+    CameraPos.x = gamestate.CharacterPos.x - 80;
+    CameraPos.y = gamestate.CharacterPos.y - 60;
 
 
+    // BULLET MOVEMENT AND ENEMY COLLISION
 
-	
+    float bulletSpeed = 200.0f;
+
+    for (Bullet& bullet : gamestate.bullets)
+    {
+        bullet.x += bullet.dirX * bulletSpeed * dt;
+        bullet.y += bullet.dirY * bulletSpeed * dt;
+
+        for (Enemy& enemy : gamestate.enemies)
+        {
+            if (!enemy.dead)
+            {
+                if (CollisionBulletEnemy(bullet, enemy))
+                {
+                    enemy.dead = true;
+
+                    gamestate.score += 100;
+
+                    std::cout << "enemy dead" << std::endl;
+                }
+            }
+        }
+    }
+
+
+    // CHARACTER AND ENEMY COLLISION
+
+    for (Enemy& enemy : gamestate.enemies)
+    {
+        if (!enemy.dead &&
+            characterEnemyCollision(gamestate.CharacterPos, enemy))
+        {
+            gameOver = true;
+
+            std::cout << "game over" << std::endl;
+            //We must remove all enemies because we will regenerate them at the beggining again
+            for (Enemy& enemy : gamestate.enemies) {
+
+                enemy.dead = true;
+            }
+            
+        }
+    }
+
+
+    // REMOVE DEAD ENEMIES
+
+    gamestate.enemies.erase(
+        std::remove_if(
+            gamestate.enemies.begin(),
+            gamestate.enemies.end(),
+            [](const Enemy& enemy)
+            {
+                return enemy.dead;
+            }
+        ),
+        gamestate.enemies.end()
+    );
+
+    if (Input::wasKeyPressed(SDL_SCANCODE_Z))
+
+    {
+        pause = true;
+    }
 }
 
 void PlayStage::render(Image& framebuffer)
@@ -503,24 +596,27 @@ void PlayStage::render(Image& framebuffer)
 
 	//Update Camera Positions
 
-	CameraPos.x = CharacterPos.x - 80;
-	CameraPos.y = CharacterPos.y - 60;
+	CameraPos.x = gamestate.CharacterPos.x - 80;
+	CameraPos.y = gamestate.CharacterPos.y - 60;
 	//some new useful functions
 	framebuffer.fill(bgcolor);								//fills the image with one color
 	//framebuffer.drawLine( 0, 0, 100,100, Color::RED );		//draws a line
 	//framebuffer.drawImage( sprite, 0, 0 );					//draws full image
 	drawMap(framebuffer);
-	framebuffer.drawImage(sprite, CharacterPos.x - CameraPos.x, CharacterPos.y - CameraPos.y);
+	framebuffer.drawImage(sprite, gamestate.CharacterPos.x - CameraPos.x, gamestate.CharacterPos.y - CameraPos.y);
 	//draws a scaled image
-	if (enemy.dead == false) {
-		framebuffer.drawImage(enemySprite, enemy.x - CameraPos.x, enemy.y - CameraPos.y);
+	for (Enemy& enemy : gamestate.enemies) {
+		if (enemy.dead == false) {
+			framebuffer.drawImage(enemySprite, enemy.x - CameraPos.x, enemy.y - CameraPos.y);
+		}
 	}
-
+	
+	
 	//framebuffer.drawImage( sprite, 0, 0, Area(0,0,14,18) );	//draws only a part of an image
-	framebuffer.drawText("Level 0", 0, 0, font);				//draws some text using a bitmap font in an image (assuming every char is 7x9)
+	framebuffer.drawText("Score: " + std::to_string(gamestate.score), 0, 0, font);				//draws some text using a bitmap font in an image (assuming every char is 7x9)
 	//framebuffer.drawText( toString(time), 1, 10, minifont,4,6);	//draws some text using a bitmap font in an image (assuming every char is 4x6)
 
-	for (Bullet& bullet : bullets)
+	for (Bullet& bullet : gamestate.bullets)
 	{
 		if (bullet.bulletDir == UP) {
 			framebuffer.drawImage(

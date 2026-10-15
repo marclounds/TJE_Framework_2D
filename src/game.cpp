@@ -7,6 +7,7 @@
 #include <cmath>
 
 
+
 Game* Game::instance = NULL;
 
 
@@ -20,7 +21,11 @@ Game::Game(int window_width, int window_height, SDL_Window* window)
 	instance = this;
 	must_exit = false;
 	intro_stage = new IntroStage();
-	play_stage = new PlayStage();
+	
+	play_stage = new PlayStage(gamestate);
+	end_stage = new EndStage();
+	pause_stage = new PauseStage(gamestate);
+	load_stage = new LoadStage(gamestate);
 
 	fps = 0;
 	frame = 0;
@@ -62,12 +67,52 @@ void Game::render(void)
 
 void Game::update(double dt)
 {
+
+	//std::cout << "Current stage: " << current_stage << std::endl;
 	current_stage->update(dt);
+	
 
 	if (current_stage == intro_stage && intro_stage->finished)
 	{
 		current_stage = play_stage;
+		gamestate.CharacterPos.x = 300;
+		gamestate.CharacterPos.y = 200;
+
+		play_stage->generationEnemies();
+		intro_stage->finished = false;
 	}
+	if (play_stage->pause == true && current_stage == play_stage) {
+		current_stage = pause_stage;
+		play_stage->pause = false;
+
+
+	}
+	if (current_stage == pause_stage && pause_stage->load == true) {
+		current_stage = load_stage;
+		pause_stage->load =false;
+
+	}
+	if (current_stage == pause_stage && pause_stage->finished == true) {
+		current_stage = play_stage;
+		pause_stage->finished = false;
+
+	}
+	if (current_stage == load_stage && load_stage->finished == true) {
+		current_stage = pause_stage;
+		load_stage->finished = false;
+	}
+	
+	if (play_stage->gameOver == true && current_stage == play_stage) {
+		//std::cout << "Changed to end stage" << std::endl;
+		current_stage = end_stage;
+		play_stage->gameOver = false;
+	}
+	if (current_stage == end_stage && end_stage->finished == true) {
+		current_stage = intro_stage;
+		end_stage->finished = false;
+	
+	}
+	
 
 }
 
